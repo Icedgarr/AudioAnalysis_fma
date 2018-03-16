@@ -12,6 +12,7 @@
 *.mp3
 *.pdf
 
+deep_music/test_and_development.py
 data/*
 literature/*
 
