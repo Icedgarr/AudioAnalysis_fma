@@ -23,8 +23,6 @@ class DieleNet:
             self.x_ph = tf.placeholder(tf.float32, shape=(None, self.input_shape[0],
                                                           self.input_shape[1]), name='mel')
             self.y_ph = tf.placeholder(tf.int32, shape=(None, self.classes), name='genre')
-        with tf.name_scope('Arguments'):
-            self.lr_ph = tf.placeholder(tf.float32, shape=1, name='learning_rate')
 
     def build_conv_layers(self):
 
@@ -119,7 +117,7 @@ class DieleNet:
                                                 predictions=self.predictions['classes'],
                                                 name='accuracy')
 
-    def build_loss(self):
+    def build_loss(self, lr=0.0001, beta1=0.9, beta2=0.999, epsilon=10**(-8)):
         with tf.name_scope('Loss'):
             self.loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.output,
                                                                        labels=self.labels,
@@ -128,8 +126,8 @@ class DieleNet:
             print(tf.shape(self.loss_op))
             print(tf.shape(self.labels))
         with tf.name_scope('optimizer'):
-            self.optimizer = tf.train.AdamOptimizer(learning_rate=0.0001, beta1=0.9,
-                                                    beta2=0.999, epsilon=10**(-8),
+            self.optimizer = tf.train.AdamOptimizer(learning_rate=lr, beta1=beta1,
+                                                    beta2=beta2, epsilon=epsilon,
                                                     use_locking=False, name='Adam')
-            self.optimizer.minimize(loss=self.loss_op, global_step=self.global_step,
-                                    var_list=None, name='Adagrad')
+            self.minimizer = self.optimizer.minimize(loss=self.loss_op, global_step=self.global_step,
+                                                     var_list=None, name='Minimizer')
