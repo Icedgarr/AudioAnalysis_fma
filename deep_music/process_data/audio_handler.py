@@ -4,7 +4,7 @@ import pandas as pd
 import ast
 import numpy as np
 
-MAX_MEL_SHAPE = (256, 647)
+MAX_MEL_SHAPE = (647, 256)
 
 
 class AudioHandler:
@@ -34,7 +34,7 @@ class AudioHandler:
         mels = []
         for path in paths:
             mel = self.get_mel(path, n_fft=n_fft,
-                               n_mels=n_mels, hop_length=hop_length)
+                               n_mels=n_mels, hop_length=hop_length).T
             mel_shape = mel.shape
             if (mel_shape[0] < MAX_MEL_SHAPE[0]) or (mel_shape[1] < MAX_MEL_SHAPE[1]):
                 pad_axis_0 = max(0, MAX_MEL_SHAPE[0] - mel_shape[0])
