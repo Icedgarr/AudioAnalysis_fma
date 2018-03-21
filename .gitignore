@@ -11,10 +11,12 @@
 *.zip
 *.mp3
 *.pdf
+*.xml
 
-deep_music/test_and_development.py
+test_and_development.py
 data/*
 literature/*
+deep_music/graphs/*
 
 venv*
 .ipynb_checkpoints
