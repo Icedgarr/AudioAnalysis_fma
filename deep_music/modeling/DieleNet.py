@@ -7,6 +7,7 @@ class DieleNet:
         self.input_shape = input_shape
         self.train = True
         self.classes = classes
+        self.build_graph()
 
     def build_graph(self):
         tf.reset_default_graph()
@@ -61,18 +62,18 @@ class DieleNet:
 
     def build_glob_temp_pool(self):
         with tf.name_scope('Global_temporal_pooling'):
-            self.glob_maxpool = tf.reduce_max(self.conv3, axis=0, keep_dims=False,
+            self.glob_maxpool = tf.reduce_max(self.conv3, axis=1, keep_dims=False,
                                               name='global_max_pool')
-            self.glob_meanpool = tf.reduce_mean(self.conv3, axis=0, keep_dims=False,
+            self.glob_meanpool = tf.reduce_mean(self.conv3, axis=1, keep_dims=False,
                                                 name='global_mean_pool')
-            self.glob_logsum = tf.reduce_logsumexp(self.conv3, axis=0, keep_dims=False,
+            self.glob_logsum = tf.reduce_logsumexp(self.conv3, axis=1, keep_dims=False,
                                                    name='global_logsum_pool')
-            self.glob_L2pool = tf.sqrt(tf.reduce_sum(tf.square(self.conv3), axis=0,
+            self.glob_L2pool = tf.sqrt(tf.reduce_sum(tf.square(self.conv3), axis=1,
                                                      keep_dims=False), name='global_L2_pool')
 
             self.glob_temp_pool = tf.concat([self.glob_maxpool, self.glob_meanpool,
                                              self.glob_L2pool, self.glob_logsum],
-                                            axis=0, name='global_temporal_pool')
+                                            axis=1, name='global_temporal_pool')
 
     def build_dense_layers(self):
         with tf.name_scope('DenseLayers'):
@@ -110,7 +111,7 @@ class DieleNet:
 
         with tf.name_scope('Prediction'):
             self.labels = tf.argmax(self.y_ph, axis=1)
-            self.predictions = {'classes': tf.argmax(self.output, dimension=1),
+            self.predictions = {'classes': tf.argmax(self.output, axis=1),
                                 'probabilities': tf.nn.softmax(self.output)}
 
             self.accuracy = tf.metrics.accuracy(labels=self.labels,
@@ -123,11 +124,9 @@ class DieleNet:
                                                                        labels=self.labels,
                                                                        name='Loss')
             self.loss_op = tf.reduce_mean(self.loss)
-            print(tf.shape(self.loss_op))
-            print(tf.shape(self.labels))
         with tf.name_scope('optimizer'):
             self.optimizer = tf.train.AdamOptimizer(learning_rate=lr, beta1=beta1,
                                                     beta2=beta2, epsilon=epsilon,
-                                                    use_locking=False, name='Adam')
-            self.minimizer = self.optimizer.minimize(loss=self.loss_op, global_step=self.global_step,
-                                                     var_list=None, name='Minimizer')
+                                                    use_locking=False, name='Adam')\
+                .minimize(loss=self.loss_op, global_step=self.global_step,
+                          var_list=None)
